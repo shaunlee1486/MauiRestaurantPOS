@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="RestaurantPOS.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:RestaurantPOS"
+    xmlns:pages="clr-namespace:RestaurantPOS.Pages"
+    Shell.FlyoutBehavior="Locked"
+    Title="Restaurant POS"
+    Shell.FlyoutBackgroundColor="Wheat"
+    Shell.FlyoutWidth="60">
+
+    <ShellContent
+        Title="Home"
+        Icon="home_regular_24.png"
+        ContentTemplate="{DataTemplate pages:MainPage}"
+        Route="MainPage" />
+
+    <ShellContent
+        Title="Orders"
+        Icon="list_ul_regular_24.png"
+        ContentTemplate="{DataTemplate pages:OrdersPage}"
+        Route="OrdersPage" />
+
+    <ShellContent
+        Title="Manage Menu"
+        Icon="grid_alt_regular_24.png"
+        ContentTemplate="{DataTemplate pages:ManageMenuItemPage}"
+        Route="ManageMenuItemPage" />
+
+    <Shell.FlyoutFooter>
+        <Image
+            Source="phone_regular_24.png"
+            HeightRequest="20"
+            WidthRequest="20"
+            HorizontalOptions="Center"
+            Aspect="AspectFit"
+            Margin="0, 0, 0, 25" />
+    </Shell.FlyoutFooter>
+</Shell>

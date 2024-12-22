@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RestaurantPOS.Pages.OrdersPage"
+             xmlns:vm="clr-namespace:RestaurantPOS.ViewModels"
+             xmlns:models="clr-namespace:RestaurantPOS.Models"
+             xmlns:data="clr-namespace:RestaurantPOS.Data"
+             xmlns:controls="clr-namespace:RestaurantPOS.Controls"
+             Shell.NavBarIsVisible="False"
+             x:DataType="vm:OrdersViewModel">
+
+    <Grid ColumnDefinitions=".75*, .25*">
+        <Grid Grid.Column="0"
+              RowDefinitions="Auto, Auto, *"
+              RowSpacing="15"
+              Padding="15">
+
+            <Label Grid.Row="0" 
+                   Text="Orders" 
+                   FontSize="22" 
+                   FontAttributes="Bold"/>
+            
+            <!--Order table-->
+            
+        </Grid>
+
+        <Grid Grid.Column="1" 
+              BackgroundColor="{StaticResource LightWheat}"
+              RowDefinitions="auto, auto"
+              Padding="0, 10">
+
+            <Label Grid.Row="0" Text="Selected Order Items"/>
+            
+            <!--List of select order item-->
+        </Grid>
+    </Grid>
+    
+</ContentPage>
