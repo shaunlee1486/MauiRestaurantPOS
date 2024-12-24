@@ -1,6 +1,7 @@
 ﻿
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using RestaurantPOS.Data;
 using RestaurantPOS.Models;
 using System.Collections.ObjectModel;
@@ -17,6 +18,9 @@ namespace RestaurantPOS.ViewModels
 
         [ObservableProperty]
         private bool _isLoading;
+
+        [ObservableProperty]
+        private OrderItem[] _orderItems = [];
 
         public OrdersViewModel(DatabaseService databaseService)
         {
@@ -56,7 +60,19 @@ namespace RestaurantPOS.ViewModels
             await Toast.Make("Order placed successfully").Show();
             return true;
         }
-    
+
+        [RelayCommand]
+        private async Task SelectOrderAsync(Order? order)
+        {
+            if (order == null || order.Id == 0) 
+            {
+                OrderItems = [];
+                return;
+            }
+
+            OrderItems = await _databaseService.GetOrderItemsAsync(order.Id);
+        }
+
         public async ValueTask InitializeAsync()
         {
             if (_isInitialized) return;
@@ -74,7 +90,7 @@ namespace RestaurantPOS.ViewModels
                 Orders.Add(order);
             }
 
-            IsLoading = true;
+            IsLoading = false;
         }
     }
 }

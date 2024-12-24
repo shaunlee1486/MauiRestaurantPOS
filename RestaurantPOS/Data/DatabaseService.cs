@@ -99,6 +99,11 @@ namespace RestaurantPOS.Data
         {
             return await _connection.Table<Order>().ToArrayAsync();
         }
+
+        public async Task<OrderItem[]> GetOrderItemsAsync(long orderId)
+        {
+            return await _connection.Table<OrderItem>().Where(c => c.OrderId == orderId).ToArrayAsync();
+        }
         
         public async ValueTask DisposeAsync()
         {
