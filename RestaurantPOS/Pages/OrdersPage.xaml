@@ -73,7 +73,7 @@
 
                     <CollectionView Grid.Row="1" ItemsSource="{Binding Orders}">
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="data:Order">
+                            <DataTemplate x:DataType="models:OrderModel">
                                 <Grid RowDefinitions="*, auto"
                                       ColumnDefinitions="*, *, *, *, *, *" 
                                       HeightRequest="39">
@@ -123,6 +123,18 @@
                                              Grid.ColumnSpan="6"
                                              Color="LightGray" 
                                              HeightRequest="1"/>
+
+
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={x:RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}" 
+                                                              CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+
+                                    <Grid.Triggers>
+                                        <DataTrigger TargetType="Grid" Binding="{Binding IsSelected}" Value="true">
+                                            <Setter Property="BackgroundColor" Value="{StaticResource LightWheat}"/>
+                                        </DataTrigger>
+                                    </Grid.Triggers>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>

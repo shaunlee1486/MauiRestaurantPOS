@@ -19,5 +19,11 @@ namespace RestaurantPOS.Pages
         {
             await _homeViewModel.InitializeAsync();
         }
+
+        private async void CategoryListControl_OnCategorySelected(Models.MenuCategoryModel obj)
+        {
+            await _homeViewModel.SelectCategoryCommand.ExecuteAsync(obj.Id);
+        }
+        
     }
 }

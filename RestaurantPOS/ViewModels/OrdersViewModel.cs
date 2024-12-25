@@ -12,7 +12,7 @@ namespace RestaurantPOS.ViewModels
     {
         private readonly DatabaseService _databaseService;
 
-        public ObservableCollection<Order> Orders { get; set; } = [];
+        public ObservableCollection<OrderModel> Orders { get; set; } = [];
 
         private bool _isInitialized;
 
@@ -57,18 +57,33 @@ namespace RestaurantPOS.ViewModels
             }
 
             // order creation was successfully
+            //Orders.Add(orderModel);
             await Toast.Make("Order placed successfully").Show();
             return true;
         }
 
         [RelayCommand]
-        private async Task SelectOrderAsync(Order? order)
+        private async Task SelectOrderAsync(OrderModel? order)
         {
             if (order == null || order.Id == 0) 
             {
                 OrderItems = [];
                 return;
             }
+
+            var preSelectedOrder = Orders.FirstOrDefault(c => c.IsSelected);
+
+            if (preSelectedOrder is not null)
+            {
+                if (preSelectedOrder.Id == order.Id)
+                {
+                    return;
+                }
+
+                preSelectedOrder.IsSelected = false;
+            }
+
+            order.IsSelected = true;
 
             OrderItems = await _databaseService.GetOrderItemsAsync(order.Id);
         }
@@ -87,7 +102,14 @@ namespace RestaurantPOS.ViewModels
 
             foreach (var order in orders) 
             {
-                Orders.Add(order);
+                Orders.Add(new OrderModel
+                {
+                    Id = order.Id,
+                    OrderDate = order.OrderDate,
+                    PaymentMode = order.PaymentMode,
+                    TotalAmountPaid = order.TotalAmountPaid,
+                    TotalItemCount = order.TotalItemCount,
+                });
             }
 
             IsLoading = false;

@@ -28,43 +28,10 @@
                    FontAttributes="Bold"/>
 
             <!--Category-->
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Categories}">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10"/>
-                </CollectionView.ItemsLayout>
+            <controls:CategoryListControl Grid.Row="1" 
+                                          Categories="{Binding Categories}" 
+                                          OnCategorySelected="CategoryListControl_OnCategorySelected"/>
 
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:MenuCategoryModel">
-                        <Border Padding="20, 10" BackgroundColor="{StaticResource LightWheat}"
-                                StrokeShape="RoundRectangle 10"
-                                StrokeThickness="0">
-                            <HorizontalStackLayout Spacing="5">
-                                <Image HeightRequest="20"
-                                        WidthRequest="20"
-                                        Source="{Binding Icon}"
-                                        VerticalOptions="Center"/>
-                                <Label Text="{Binding Name}" VerticalOptions="Center" TextColor="Maroon">
-                                    <Label.Triggers>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="true">
-                                            <Setter Property="TextColor" Value="White" />
-                                        </DataTrigger>
-                                    </Label.Triggers>
-                                </Label>
-                            </HorizontalStackLayout>
-                            <Border.Triggers>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="true">
-                                    <Setter Property="BackgroundColor" Value="Maroon" />
-                                </DataTrigger>
-                            </Border.Triggers>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={x:RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=SelectCategoryCommand}" 
-                                                      CommandParameter="{Binding Id}"/>
-                            </Border.GestureRecognizers>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-                
             <!--Menu item-->
             <Grid Grid.Row="2">
                 <CollectionView ItemsSource="{Binding MenuItems}">
