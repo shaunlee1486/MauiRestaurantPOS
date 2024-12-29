@@ -1,20 +1,22 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using RestaurantPOS.Data;
+using RestaurantPOS.Events;
 using RestaurantPOS.Models;
 using System.Collections.ObjectModel;
-using MenuItem = RestaurantPOS.Data.MenuItem;
 
 namespace RestaurantPOS.ViewModels
 {
-    public partial class HomeViewModel : ObservableObject
+    public partial class HomeViewModel : ObservableObject, IRecipient<MenuItemChangedMessage>
     {
         private readonly DatabaseService _databaseService;
         private readonly OrdersViewModel _ordersViewModel;
+        private readonly SettingsViewModel _settingsViewModel;
         private bool _isInitialized;
 
         [ObservableProperty]
-        private MenuItem[] _menuItems;
+        private MenuItemModel[] _menuItems;
 
 
         [ObservableProperty]
@@ -36,15 +38,34 @@ namespace RestaurantPOS.ViewModels
         [NotifyPropertyChangedFor(nameof(Total))]
         private int _taxPercentage;
 
+        [ObservableProperty]
+        private string _name = "Guest";
+
         public decimal TaxAmount => (Subtotal * TaxPercentage)/100;
 
         public decimal Total => Subtotal + TaxAmount; 
 
-        public HomeViewModel(DatabaseService databaseService, OrdersViewModel ordersViewModel)
+        public HomeViewModel(DatabaseService databaseService, OrdersViewModel ordersViewModel, SettingsViewModel settingsViewModel)
         {
             _databaseService = databaseService;
             _ordersViewModel = ordersViewModel;
+            _settingsViewModel = settingsViewModel;
             CartItems.CollectionChanged += CartItems_CollectionChanged;
+
+            // option1
+            //WeakReferenceMessenger.Default.Register<MenuItemChangedMessage>(this, (recipient, message) =>
+            //{
+
+            //});
+
+            // option2 with IRecipient
+            WeakReferenceMessenger.Default.Register<MenuItemChangedMessage>(this);
+            WeakReferenceMessenger.Default.Register<NameChangedMessage>(this, (recipient, message) =>
+            {
+                Name = message.Value;
+            });
+
+            TaxPercentage = settingsViewModel.GetTaxPercentage();
         }
 
         private void CartItems_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -68,15 +89,31 @@ namespace RestaurantPOS.ViewModels
             Categories[0].IsSelected = true;
             SelectedCategory = Categories[0];
 
-            MenuItems = await _databaseService.GetMenuItemByCategoryAsync(SelectedCategory.Id);
+            await GetListMenuItemsByCategoryId(SelectedCategory.Id);
 
             IsLoading = false;
+        }
+
+        private async Task GetListMenuItemsByCategoryId(int categoryId)
+        {
+            MenuItems = (await _databaseService.GetMenuItemByCategoryAsync(categoryId))
+                .Select(c => new MenuItemModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Price = c.Price,
+                    Description = c.Description,
+                    Icon = c.Icon,
+                }).ToArray();
         }
 
         [RelayCommand]
         private async Task SelectCategoryAsync(int categoryId) 
         {
-            if(SelectedCategory.Id == categoryId) return;
+            if(SelectedCategory == null || SelectedCategory.Id == categoryId)
+            {
+                return;
+            }
 
             IsLoading = true;
 
@@ -89,13 +126,13 @@ namespace RestaurantPOS.ViewModels
 
             SelectedCategory = newlySelectedCategory;
             await Task.Delay(500);
-            MenuItems = await _databaseService.GetMenuItemByCategoryAsync(SelectedCategory.Id);
+            await GetListMenuItemsByCategoryId(SelectedCategory.Id);
 
             IsLoading = false;
         }
 
         [RelayCommand]
-        private void AddToCart(MenuItem menuItem)
+        private void AddToCart(MenuItemModel menuItem)
         {
             var cartItem = CartItems.FirstOrDefault(c => c.ItemId == menuItem.Id);
             if (cartItem == null)
@@ -175,6 +212,9 @@ namespace RestaurantPOS.ViewModels
                 }
 
                 TaxPercentage = taxPercentage;
+
+                // Save it in preferences
+                _settingsViewModel.SetTaxPercentage(taxPercentage);
             }
             else
             {
@@ -195,6 +235,57 @@ namespace RestaurantPOS.ViewModels
             }
 
             IsLoading = false;
+        }
+
+        public void Receive(MenuItemChangedMessage message)
+        {
+            var model = message.Value;
+            RefreshUpdateMenuItemList(model);
+
+            var cartItem = CartItems.FirstOrDefault(c => c.ItemId == model.Id);
+            if (cartItem != null) 
+            { 
+                cartItem.Price = model.Price;
+                cartItem.Icon = model.Icon;
+                cartItem.Name = model.Name;
+
+                RecalculateAmounts();
+            }
+        }
+
+        private void RefreshUpdateMenuItemList(MenuItemModel model)
+        {
+            var menuItem = MenuItems.FirstOrDefault(c => c.Id == model.Id);
+
+            if (menuItem != null)
+            {
+                // this menu item is on the screen the right now
+
+                // check if this item still has a mapping to selected category
+                if (!model.MenuCategories.Any(c => c.IsSelected && c.Id == SelectedCategory.Id))
+                {
+                    // this item no longer belongs to the selected category
+                    // remove this item from the current ui menu items list
+                    MenuItems = [.. MenuItems.Where(c => c.Id != model.Id)];
+                    return;
+                }
+
+                // update the details
+                menuItem.Price = model.Price;
+                menuItem.Description = model.Description;
+                menuItem.Icon = model.Icon;
+                menuItem.Name = model.Name;
+
+                //MenuItems = [.. MenuItems];
+            }
+            else if (model.MenuCategories.Any(c => c.IsSelected && c.Id == SelectedCategory.Id))
+            {
+                // this item was not on the ui
+                // we updated the item by adding this currently selected category
+                // so add this menu item to the current ui menu item list
+
+                MenuItems = [.. MenuItems, model];
+            }
         }
     }
 }

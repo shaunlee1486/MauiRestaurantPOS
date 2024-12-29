@@ -105,6 +105,122 @@ namespace RestaurantPOS.Data
             return await _connection.Table<OrderItem>().Where(c => c.OrderId == orderId).ToArrayAsync();
         }
         
+        public async Task<MenuCategory[]> GetCategoriesOfMenuItem(int menuItemId)
+        {
+            var query = @"
+                            SELECT cat.*
+                            FROM MenuCategory cat
+                            INNER JOIN MenuItemCategoryMapping map ON cat.Id = map.MenuCategoryId
+                            WHERE map.MenuItemId = ?
+                        ";
+
+            var categories = await _connection.QueryAsync<MenuCategory>(query, menuItemId);
+
+            return [.. categories];
+        }
+
+        public async Task<string?> SaveMenuItemAsync(MenuItemModel model)
+        {
+            if (model.Id == 0)
+            {
+                // Creating a new menu item
+                return await InsertMenuItemAsync(model);
+            }
+            else
+            {
+                // Updating an existing menu item
+                return await UpdateMenuItemAsync(model);
+            }
+        }
+
+        private async Task<string?> UpdateMenuItemAsync(MenuItemModel model)
+        {
+            string? errorMessage = null;
+
+            await _connection.RunInTransactionAsync(db =>
+            {
+                var menuItem = db.Find<MenuItem>(model.Id);
+
+                menuItem.Name = model.Name;
+                menuItem.Description = model.Description;
+                menuItem.Icon = model.Icon;
+                menuItem.Price = model.Price;
+
+                if (db.Update(menuItem) == 0)
+                {
+                    // this operation failed
+                    // return error message
+                    errorMessage = "Error in updating menu item";
+                    throw new Exception(); // to trigger rollback
+                }
+
+                var deleQuery = @"
+                                        DELETE FROM MenuItemCategoryMapping
+                                        WHERE MenuItemId = ?
+                                    ";
+
+                db.Execute(deleQuery, menuItem.Id);
+
+                var categoryMapping = model.MenuCategories.Where(c => c.IsSelected)
+                                                        .Select(c => new MenuItemCategoryMapping
+                                                        {
+                                                            MenuCategoryId = c.Id,
+                                                            MenuItemId = menuItem.Id,
+                                                        });
+
+                if (db.InsertAll(categoryMapping) == 0)
+                {
+                    errorMessage = "Error in updating menu item";
+                    throw new Exception(); // to trigger rollback
+                }
+            });
+
+            return errorMessage;
+        }
+
+        private async Task<string?> InsertMenuItemAsync(MenuItemModel model)
+        {
+            var menuItem = new MenuItem
+            {
+                Name = model.Name,
+                Description = model.Description,
+                Icon = model.Icon,
+                Price = model.Price,
+            };
+
+            if (await _connection.InsertAsync(menuItem) > 0
+                && await InsertMenuItemCategoryMappingAsync(model, menuItem))
+            {
+                return null;
+            }
+
+            return "Error in saving menu item";
+        }
+
+        private async Task<bool> InsertMenuItemCategoryMappingAsync(MenuItemModel model, MenuItem menuItem)
+        {
+            var categoryMapping = model.MenuCategories.Where(c => c.IsSelected)
+                                                                        .Select(c => new MenuItemCategoryMapping
+                                                                        {
+                                                                            MenuCategoryId = c.Id,
+                                                                            MenuItemId = menuItem.Id,
+                                                                        });
+
+            if (await _connection.InsertAllAsync(categoryMapping) > 0)
+            {
+                model.Id = menuItem.Id;
+                return true;
+            }
+            else
+            {
+                // Menu item insert was successful
+                // but Category mapping insert operation failed
+                // we should remove the newly inserted menu item from the database
+                await _connection.DeleteAsync(menuItem);
+                return false;               
+            }
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_connection != null)

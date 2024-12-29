@@ -23,7 +23,8 @@
               RowSpacing="15"
               Padding="15">
             
-            <Label Grid.Row="0" Text="Hello, Shaun Lee" 
+            <Label Grid.Row="0" 
+                   Text="{Binding Name, StringFormat='Hello, {0}'}" 
                    FontSize="22" 
                    FontAttributes="Bold"/>
 
@@ -34,51 +35,8 @@
 
             <!--Menu item-->
             <Grid Grid.Row="2">
-                <CollectionView ItemsSource="{Binding MenuItems}">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="4"  HorizontalItemSpacing="10" VerticalItemSpacing="10"/>
-                    </CollectionView.ItemsLayout>
+                <controls:MenuItemListControl Items="{Binding MenuItems}" OnSelectItem="MenuItemListControl_OnSelectItem"/>
 
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="data:MenuItem">
-                            <Border Padding="10" StrokeShape="RoundRectangle 10" Stroke="#DDD">
-                                <VerticalStackLayout Spacing="10">
-                                    <Border BackgroundColor="{StaticResource LightWheat}" 
-                                            HeightRequest="150"
-                                            StrokeThickness="0">
-                                        <Image Source="{Binding Icon}" 
-                                               WidthRequest="250" 
-                                               MaximumHeightRequest="150"
-                                               HorizontalOptions="Center"
-                                               VerticalOptions="Center"
-                                               Aspect="Center"/>
-                                    </Border>
-
-                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="20"/>
-                                    <Label Text="{Binding Description}" FontSize="12" TextColor="Gray"/>
-                                    <FlexLayout JustifyContent="SpaceBetween">
-                                        <Label Text="{Binding Price, StringFormat='{0:C}'}"
-                                               FontSize="25"
-                                               FontAttributes="Bold"
-                                               TextColor="Maroon"/>
-                                        <ImageButton Source="shopping_bag_regular_24.png" 
-                                                     BackgroundColor="{StaticResource LightWheat}"
-                                                     CornerRadius="8"
-                                                     HeightRequest="25"
-                                                     WidthRequest="25"
-                                                     Command="{Binding Source={x:RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=AddToCartCommand}" 
-                                                      CommandParameter="{Binding .}"/>
-                                    </FlexLayout>
-                                </VerticalStackLayout>
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={x:RelativeSource AncestorType={x:Type vm:HomeViewModel}}, Path=AddToCartCommand}" 
-                                                          CommandParameter="{Binding .}"/>
-                                </Border.GestureRecognizers>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-                
                 <BoxView IsVisible="{Binding IsLoading}"
                          HorizontalOptions="Fill"
                          VerticalOptions="Fill"

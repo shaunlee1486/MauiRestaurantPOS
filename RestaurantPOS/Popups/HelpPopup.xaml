@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                x:Class="RestaurantPOS.Popups.HelpPopup"
+                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                CanBeDismissedByTappingOutsideOfPopup="False"
+                >
+
+    <Border BackgroundColor="Wheat"
+            MinimumWidthRequest="350"
+            StrokeShape="RoundRectangle 10"
+            Stroke="Maroon"
+            StrokeThickness="3">
+        <Border.Shadow>
+            <Shadow Brush="Maroon"/>
+        </Border.Shadow>
+        <VerticalStackLayout>
+            <Grid ColumnDefinitions="*, auto"
+                  BackgroundColor="Maroon"
+                  Padding="15, 8">
+                
+                <Label Grid.Column="0" 
+                       Text="Need help?"
+                       TextColor="White"
+                       FontSize="18"/>
+
+                <Label Grid.Column="1" 
+                       Text="X"
+                       BackgroundColor="Red"
+                       HeightRequest="25"
+                       WidthRequest="25"
+                       HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center"
+                       TextColor="White"
+                       FontAttributes="Bold"
+                       FontSize="18">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="ClosePopup_Tapped"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </Grid>
+
+            <VerticalStackLayout Spacing="10" Padding="15">
+                <Image Source="phone_regular_24.png" 
+                       HeightRequest="25"
+                       WidthRequest="25"
+                       HorizontalOptions="Center"/>
+                <Label Text="You can connect with us"
+                       FontSize="16"
+                       HorizontalOptions="Center"/>
+                
+                <HorizontalStackLayout Spacing="5">
+                    <Label Text="Email us at" FontSize="16"/>
+                    <Label Text="shaun1486@yk_group.com" FontSize="16" FontAttributes="Bold" TextDecorations="Underline"/>
+                    <Image Source="copy_regular_24.png" WidthRequest="25"/>
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="5">
+                    <Label Text="Call us at" FontSize="16"/>
+                    <Label Text="4254326112441" FontSize="16" FontAttributes="Bold" TextDecorations="Underline"/>
+                    <Image Source="copy_regular_24.png" WidthRequest="25"/>
+                </HorizontalStackLayout>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>
